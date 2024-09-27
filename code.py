@@ -158,7 +158,7 @@ class VirtualKey:
 
 
 class VirtualKeyBoard:
-    def __init__(self, mode="usb_hid", usb_timeout=1):
+    def __init__(self, mode="ch9329", usb_timeout=1):
         self.mode = mode
         
         # print("init ble_keyboard")
@@ -187,7 +187,7 @@ class VirtualKeyBoard:
         # print("init ch9329_keyboard")
         self.ch9329_keyboard = CH9329(uart)
     
-        self.set_mode("usb_hid")
+        self.set_mode("ch9329")
         self.reset()
 
     def erase_bonding(self):

@@ -14,18 +14,16 @@ CMD_MEDIA_KEY = 0x03
 CMD_MOUSE_ABSOLUTE = 0x04
 CMD_MOUSE_RELATIVE = 0x05
 
-MODIFIER_KEY_CODE = set(
-    [
-        Keycode.LEFT_CONTROL,
-        Keycode.LEFT_SHIFT,
-        Keycode.LEFT_ALT,
-        Keycode.LEFT_GUI,
-        Keycode.RIGHT_CONTROL,
-        Keycode.RIGHT_SHIFT,
-        Keycode.RIGHT_ALT,
-        Keycode.RIGHT_GUI,
-    ]
-)
+MODIFIER_KEY_CODE = [
+    Keycode.LEFT_CONTROL,
+    Keycode.LEFT_SHIFT,
+    Keycode.LEFT_ALT,
+    Keycode.LEFT_GUI,
+    Keycode.RIGHT_CONTROL,
+    Keycode.RIGHT_SHIFT,
+    Keycode.RIGHT_ALT,
+    Keycode.RIGHT_GUI,
+]
 
 
 class InvalidKeyCodeError(Exception):
@@ -45,13 +43,13 @@ class CH9329:  # TODO: Maintaining Key Order
     def __init__(self, uart: UART, address: int = 0x00):
         self._uart = uart
         self._address = address
-        self._pressed_keys: set[int] = set()
-        self._pressed_modifier_keys: set[int] = set()
+        self._pressed_keys: list[int] = list()
+        self._pressed_modifier_keys: list[int] = list()
         self._pressed_mouse_key_bit: int = 0
 
         self.debug = False
 
-    def _parse_modifier_keys(self, keys: set[int]) -> int:
+    def _parse_modifier_keys(self, keys: list[int]) -> int:
         b: int = 0
         for i, modifier_key in enumerate(MODIFIER_KEY_CODE):
             if modifier_key in keys:
@@ -59,37 +57,27 @@ class CH9329:  # TODO: Maintaining Key Order
         return b
 
     def keyboard_press(self, *key_codes: int):
-        arg_keys = set(key_codes)
+        arg_keys = list(key_codes)
 
-        pressed_keys = self._pressed_keys | (arg_keys - MODIFIER_KEY_CODE)
-        # if len(pressed_keys) > 6:
-        #     raise InvalidKeyCodeError(
-        #         "The number of pressed keys must be less than or equal to 6."
-        #     )
-        self._pressed_keys = set(list(pressed_keys)[:6])
+        pressed_keys = self._pressed_keys + [arg_key for arg_key in arg_keys if arg_key not in MODIFIER_KEY_CODE]
+        self._pressed_keys = pressed_keys[-6:]
 
-        pressed_modifier_keys = self._pressed_modifier_keys | (
-            arg_keys & MODIFIER_KEY_CODE
-        )
-        # if len(pressed_keys) > 4:
-        #     raise InvalidKeyCodeError(
-        #         "The number of modifier keys must be less than or equal to 4."
-        #     )
-        self._pressed_modifier_keys = set(list(pressed_modifier_keys)[:4])
+        pressed_modifier_keys = self._pressed_modifier_keys + [arg_key for arg_key in arg_keys if arg_key in MODIFIER_KEY_CODE]
+        self._pressed_modifier_keys = pressed_modifier_keys[-4:]
 
         self._send_key()
 
     def keyboard_release(self, *key_codes: int):
-        arg_keys = set(key_codes)
+        arg_keys = key_codes
 
-        self._pressed_keys = self._pressed_keys - arg_keys
-        self._pressed_modifier_keys = self._pressed_modifier_keys - arg_keys
+        self._pressed_keys = [pressed_key for pressed_key in self._pressed_keys if pressed_key not in arg_keys]
+        self._pressed_modifier_keys = [pressed_modifier_key for pressed_modifier_key in self._pressed_modifier_keys if pressed_modifier_key not in arg_keys]
 
         self._send_key()
 
     def keyboard_release_all(self):
-        self._pressed_keys = set()
-        self._pressed_modifier_keys = set()
+        self._pressed_keys = []
+        self._pressed_modifier_keys = []
 
         self._send_key()
 
