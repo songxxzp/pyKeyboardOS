@@ -1,0 +1,3 @@
+neopixel
+adafruit_ble
+adafruit_hid
