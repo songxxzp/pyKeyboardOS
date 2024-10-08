@@ -4,6 +4,9 @@ A Real-Time OS built for Keyboard using CircuitPython.
 
 ### Changes
 
+#### 2024.10.08
+- [Middle Term Report](https://docs.qq.com/slide/DUnJsUXBYbUl4WGhJ)
+
 #### 2024.10.05
 - Add independent camera code
 
