@@ -6,6 +6,23 @@ A Real-Time OS built for Keyboard using CircuitPython.
 
 #### 2024.10.08
 - [Middle Term Report](https://docs.qq.com/slide/DUnJsUXBYbUl4WGhJ)
+- Final Goal: Basic Keyboard + Sleep Mode + At Least One Modular Module (Camera, Screen, Numpad, etc.).
+
+##### Basic Keyboard
+- Connection via USB or BLE.
+- Basic RGB lighting
+- Basic key mapping
+
+##### Sleep Mode
+- Auto-sleep (low power mode)
+- Low-latency waking
+
+##### Modular Modules
+- Camera
+- Screen
+- Numpad
+- Knobs
+- Motor
 
 #### 2024.10.05
 - Add independent camera code
