@@ -35,3 +35,7 @@ A Real-Time OS built for Keyboard using CircuitPython.
 ### Acknowledgments
 
 - circuitpython-ch9329: https://github.com/74th/circuitpython-ch9329
+
+### Tracking
+
+- wpa2 enterprise support: https://github.com/zephyrproject-rtos/zephyr/pull/78921
