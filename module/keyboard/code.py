@@ -16,13 +16,14 @@ from adafruit_hid.keycode import Keycode
 from lib.ch9329 import CH9329
 
 
-PL_PIN = board.D8  # Parallel Load pin
 CE_PIN = board.D10  # Chip Enable pin
-SPI_CLOCK = board.D9  # SPI Clock pin
+PL_PIN = board.D9  # Parallel Load pin
+SPI_CLOCK = board.D8  # SPI Clock pin
 SPI_MISO = board.D5  # SPI Master In Slave Out pin
-RGB_CONTROLL = board.D2
+
+RGB_CONTROLL = board.D3
 pixel_pin = board.D4  # RGB IN
-MOS_PIN = board.D3
+MOS_PIN = board.D2
 TX_PIN = board.D6
 RX_PIN = board.D7
 
@@ -48,7 +49,7 @@ ce.value = False  # Enable the chip (active low)
 
 mos_io = digitalio.DigitalInOut(MOS_PIN)
 mos_io.direction = digitalio.Direction.OUTPUT
-mos_io.value = True
+mos_io.value = False
 
 uart = busio.UART(TX_PIN, RX_PIN, baudrate=9600)
 
@@ -170,12 +171,13 @@ class VirtualKeyBoard:
         self.mac_address = self.adapter.address
         print("Bluetooth MAC Address:", self.mac_address)
         self.ble = BLERadio()
-        self.ble_hid = HIDService()
-        self.advertisement = ProvideServicesAdvertisement(self.ble_hid)
-        self.advertisement.appearance = 961
-        self.advertisement.short_name = "s68k"
-        self.advertisement.complete_name = "s68k esp32s3 keyboard"
-        self.ble_keyboard = Keyboard(self.ble_hid.devices)
+        # self.ble_hid = HIDService()
+        # self.advertisement = ProvideServicesAdvertisement(self.ble_hid)
+        # self.advertisement.appearance = 961
+        # self.advertisement.short_name = "s68k"
+        # self.advertisement.complete_name = "s68k esp32s3 keyboard"
+        # self.ble_keyboard = Keyboard(self.ble_hid.devices)
+        self.ble_keyboard = None
 
         # print("init usb_hid_keyboard")
         try:

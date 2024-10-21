@@ -4,6 +4,10 @@ A Real-Time OS built for Keyboard using CircuitPython.
 
 ### Changes
 
+#### 2024.10.21
+- Update PCB adaptation
+- Disable BLE
+
 #### 2024.10.08
 - [Middle Term Report](https://docs.qq.com/slide/DUnJsUXBYbUl4WGhJ)
 - Final Goal: Basic Keyboard + Sleep Mode + At Least One Modular Module (Camera, Screen, Numpad, etc.).
