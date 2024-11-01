@@ -2,7 +2,32 @@
 
 A Real-Time OS built for Keyboard using CircuitPython.
 
+## Software
+
+### Files
+
+- module/keyboard: Circuit Python Keyboard(usb & ble)
+
+### Usage
+
+#### Circuit Python Keyboard
+
+- Fn + Q: connection via right usb type-c
+- Fn + W: connection via upper usb type-c
+- Fn + E: connection via bluetooth
+- Fn + BackSpace: erase saved bluetooth info(use when connection error)
+
+- Fn + Home: PageUp
+- Fn + End: PageDown
+- Fn + Esc: PrtSc
+- Fn + 1-10,-+: F1-12
+
 ### Changes
+
+#### 2024.11.01
+- Fix Bluetooth(hardward issue)
+- Add Basic RGB colors
+- 6-key sequential(via upper usb type-c)
 
 #### 2024.10.21
 - Update PCB adaptation
@@ -43,3 +68,61 @@ A Real-Time OS built for Keyboard using CircuitPython.
 ### Tracking
 
 - wpa2 enterprise support: https://github.com/zephyrproject-rtos/zephyr/pull/78921
+
+## Hardware
+
+### Prototype Keyboard Case Design
+
+- Foot Pads: Completed √
+- Li Battery: Completed √
+- Upper-side USB port: Completed √
+- USB HUB: Testing
+- Dry Battery: Designing
+
+### S68K7 2024.10.28 (Under construction)
+
+### S68K6 2024.10.13 (success; Prototype 2)
+
+- Use IP5407 power circuit(works fine).
+- Add USB Type A for external power supply. 
+
+### S68K5 2024.9.30 (failed; power)
+
+- Use SX1308 power circuit(significant error)
+- Place the battery interface on the top
+- Thickness of the main control board
+- Front height, foot support
+- Check key position coordinates
+
+### S68K4 2024.8.26 (partial success; Prototype 1)
+
+- Use ETA9741 power circuit
+- Replace single-channel AND gate circuit
+- Automatic charge-discharge switching
+- Battery switch MOS control
+- Physical battery switch position
+- MCU main control board
+- Key alignment
+- PCB shape
+
+### S68K3 2024.8.19 (failed; power)
+
+- RGB input signal interruption (replace 470K resistor with 500Ω and add 3.3v-5v boost circuit) √
+- Battery charging anomaly (seems fine, recheck; prone to failure?)
+- Charging circuit capacitor optimization
+- Charging indicator light arrangement optimization √
+- Replace charging interface with a surface mount √
+- Reduce component variety
+- USB to TTL chip √
+- USB Type-C pin GND reversed (Done, to be checked) √
+- Consider moving USB Type-C upwards
+
+### S68K2 2024.7.31 (failed; power, led)
+
+- RGB LED pin assignment error (replaced backing in the next design)
+- Power supply short circuit (replaced battery chip in the next design)
+
+## TODO:
+- Add Prototype Picture
+- Add PCB Picture
+- Migrate to MicroPython
