@@ -4,6 +4,7 @@ import busio
 import digitalio
 import usb_hid
 import _bleio
+import random
 
 import neopixel
 
@@ -15,6 +16,9 @@ from adafruit_hid.keycode import Keycode
 
 from lib.ch9329 import CH9329
 
+
+light_level = 128
+max_light_level = 128
 
 CE_PIN = board.D10  # Chip Enable pin
 PL_PIN = board.D9  # Parallel Load pin
@@ -135,7 +139,15 @@ class PhysicalKey:
         self.physical_id = key_id
         self.key_name = key_name
         self.pressed = False
+        self.color = (16, 16, 16)
         # TODO: add used mark to avoid conflict
+    
+    def random_color(self, light_level):
+        self.color = (
+            random.randint(0, light_level-1),
+            random.randint(0, light_level-1),
+            random.randint(0, light_level-1)
+        )
 
 
 class VirtualKey:
@@ -171,13 +183,13 @@ class VirtualKeyBoard:
         self.mac_address = self.adapter.address
         print("Bluetooth MAC Address:", self.mac_address)
         self.ble = BLERadio()
-        # self.ble_hid = HIDService()
-        # self.advertisement = ProvideServicesAdvertisement(self.ble_hid)
-        # self.advertisement.appearance = 961
-        # self.advertisement.short_name = "s68k"
-        # self.advertisement.complete_name = "s68k esp32s3 keyboard"
-        # self.ble_keyboard = Keyboard(self.ble_hid.devices)
-        self.ble_keyboard = None
+        self.ble_hid = HIDService()
+        self.advertisement = ProvideServicesAdvertisement(self.ble_hid)
+        self.advertisement.appearance = 961
+        self.advertisement.short_name = "s68k"
+        self.advertisement.complete_name = "s68k esp32s3 keyboard"
+        self.ble_keyboard = Keyboard(self.ble_hid.devices)
+        # self.ble_keyboard = None
 
         # print("init usb_hid_keyboard")
         try:
@@ -411,9 +423,9 @@ virtual_key_layers = [
 ]
 
 
-def read_shift_registers():
+def read_shift_registers(delay=1e-6):
     pl.value = False
-    time.sleep(1e-6)  # Small delay to ensure the data is loaded
+    time.sleep(delay)
     pl.value = True
 
     while not spi.try_lock():
@@ -437,17 +449,20 @@ def get_pressed_key_ids(register_bits):
     return pressed_key_ids
 
 
-def light_keys(keys, refresh=True, color=(16, 16, 16)):
+def light_keys(keys, refresh=True, colors=[], color=(16, 16, 16)):
     if refresh:
         for i in range(num_pixels):
             pixels[i] = (0, 0, 0)
-    for key_id in keys:
-        pixels[light_2_key.index(key_id)] = color
+    while len(colors) < len(keys):
+        colors.append(color)
+    for key_id, key_color in zip(keys, colors):
+        pixels[light_2_key.index(key_id)] = key_color
     pixels.show()
 
 
 if __name__ == "__main__":
     running = True
+    light_level = 32
     id_key_map = {}
     for k, v in physical_key_name_map.items():
         id_key_map[v] = k
@@ -462,6 +477,7 @@ if __name__ == "__main__":
     virtual_key_layers[fn_key_layer_id][physical_key_map["BACKSPACE"].physical_id].pressed_function = kbd.erase_bonding
 
     virtual_key_layer_id = 0
+    physical_key_id_map = {}
 
     while running:
         register_bits = read_shift_registers()
@@ -471,8 +487,10 @@ if __name__ == "__main__":
                 if key.pressed == False:
                     # kbd.press(key.keycode)
                     # print(f"Pressed PhysicalKey: {key.key_name}")
+                    key.random_color(light_level)
                     pass
                 key.pressed = True
+                physical_key_id_map[key.physical_id] = key
             elif key.pressed == True:
                 key.pressed = False
                 # kbd.release(key.keycode)
@@ -492,6 +510,7 @@ if __name__ == "__main__":
                 key.pressed = False
                 key.update_time = time.time()
 
-        light_keys(pressed_key_ids, refresh=True)
+        colors = [physical_key_id_map[pressed_key_id].color for pressed_key_id in pressed_key_ids]
+        light_keys(pressed_key_ids, colors=colors, refresh=True)
         time.sleep(0.005)
 
