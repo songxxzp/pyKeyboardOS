@@ -17,8 +17,12 @@ from adafruit_hid.keycode import Keycode
 from lib.ch9329 import CH9329
 
 
-light_level = 128
-max_light_level = 128
+scan_interval = 0.001
+light_level = 255
+max_light_level = 255
+light_mode = "on_press"  # "on_press", "random_static"
+light_keys_on_start = ["Q", "W", "E", "Fn", "BACKSPACE"]
+on_start_keyboard_mode = "usb_hid"
 
 CE_PIN = board.D10  # Chip Enable pin
 PL_PIN = board.D9  # Parallel Load pin
@@ -56,7 +60,6 @@ mos_io.direction = digitalio.Direction.OUTPUT
 mos_io.value = False
 
 uart = busio.UART(TX_PIN, RX_PIN, baudrate=9600)
-
 
 light_2_key = [66, 65, 64, 63, 70, 69, 68, 50, 49, 48, 47, 54, 46, 39, 38, 31, 30, 23, 22, 18, 14, 7, 67, 55, 62, 8, 13, 17, 21, 24, 29, 32, 37, 40, 45, 53, 52, 44, 41, 36, 33, 28, 25, 20, 16, 12, 9, 61, 58, 56, 51, 43, 42, 35, 34, 27, 26, 19, 15, 11, 10, 60, 59, 57, 6, 5, 4, 3]
 
@@ -131,22 +134,23 @@ physical_key_name_map = {
     "DELETE": 3,
 }
 
-physical_key_ids = list(physical_key_name_map.values())
+physical_key_ids = None
 
 
 class PhysicalKey:
-    def __init__(self, key_id: int, key_name: str) -> None:
+    def __init__(self, key_id: int, key_name: str, light_level: int = light_level) -> None:
         self.physical_id = key_id
         self.key_name = key_name
         self.pressed = False
-        self.color = (16, 16, 16)
+        self.color = (light_level, light_level, light_level)
+        self.random_color(light_level)
         # TODO: add used mark to avoid conflict
     
     def random_color(self, light_level):
         self.color = (
-            random.randint(0, light_level-1),
-            random.randint(0, light_level-1),
-            random.randint(0, light_level-1)
+            random.randint(0, light_level),
+            random.randint(0, light_level),
+            random.randint(0, light_level)
         )
 
 
@@ -163,15 +167,24 @@ class VirtualKey:
     # TODO: @property
     def is_pressed(self):
         pressed = self.bind_physical_key.pressed
-        if pressed and self.pressed_function:
+        return pressed
+
+    def press(self):
+        self.pressed = True
+        if self.pressed_function:
             pressed_function_result = self.pressed_function()
             if pressed_function_result is None:  # TODO
-                return False
-        return pressed
+                return None
+            return pressed_function_result
+        return None
+        
+    def release(self):
+        self.pressed = False
+        return None
 
 
 class VirtualKeyBoard:
-    def __init__(self, mode="ch9329", usb_timeout=1):
+    def __init__(self, mode=on_start_keyboard_mode, usb_timeout=1):
         self.mode = mode
         
         # print("init ble_keyboard")
@@ -201,7 +214,7 @@ class VirtualKeyBoard:
         # print("init ch9329_keyboard")
         self.ch9329_keyboard = CH9329(uart)
     
-        self.set_mode("ch9329")
+        self.set_mode(self.mode)
         self.reset()
 
     def erase_bonding(self):
@@ -417,12 +430,6 @@ def generate_fn_layer():
     return layer
 
 
-virtual_key_layers = [
-    generate_custom_layer(),
-    generate_fn_layer(),
-]
-
-
 def read_shift_registers(delay=1e-6):
     pl.value = False
     time.sleep(delay)
@@ -460,24 +467,63 @@ def light_keys(keys, refresh=True, colors=[], color=(16, 16, 16)):
     pixels.show()
 
 
-if __name__ == "__main__":
+def change_light_level(number, set_mode=False):
+    global light_level
+    if set_mode:
+        light_level = number
+    else:
+        light_level += number
+    light_level = min(max(light_level, 0), max_light_level)
+    return None
+
+
+def change_light_mode():
+    global light_mode
+    if light_mode == "on_press":
+        light_mode = "random_static"
+    elif light_mode == "random_static":
+        light_mode = "on_press"
+    else:
+        light_mode = "on_press"
+    return None
+
+
+def main():
+    global physical_key_ids
     running = True
-    light_level = 32
     id_key_map = {}
     for k, v in physical_key_name_map.items():
         id_key_map[v] = k
 
+    on_start_pressed_key_ids = []
+    for light_key_on_start in light_keys_on_start:
+        if light_key_on_start in physical_key_name_map:
+            on_start_pressed_key_ids.append(physical_key_name_map[light_key_on_start])
+    colors = [(255, 0, 0) for _ in on_start_pressed_key_ids]
+    light_keys(on_start_pressed_key_ids, colors=colors, refresh=True)
+
     kbd = VirtualKeyBoard()
 
+    physical_key_ids= list(physical_key_name_map.values())
+    physical_key_id_map = {key.physical_id: key for key in physical_keys}
+
+    virtual_key_layers = [
+        generate_custom_layer(),
+        generate_fn_layer(),
+    ]
     fn_key_layer_id = 1
+    # set fn layer key function
     virtual_key_layers[fn_key_layer_id][physical_key_map["Q"].physical_id].pressed_function = partial(kbd.set_mode, "usb_hid")  # TODO: getkey function
     virtual_key_layers[fn_key_layer_id][physical_key_map["W"].physical_id].pressed_function = partial(kbd.set_mode, "ch9329")
     virtual_key_layers[fn_key_layer_id][physical_key_map["E"].physical_id].pressed_function = partial(kbd.set_mode, "bluetooth")
     virtual_key_layers[fn_key_layer_id][physical_key_map["R"].physical_id].pressed_function = partial(kbd.set_mode, "dummy")
     virtual_key_layers[fn_key_layer_id][physical_key_map["BACKSPACE"].physical_id].pressed_function = kbd.erase_bonding
-
+    virtual_key_layers[fn_key_layer_id][physical_key_map["UP_ARROW"].physical_id].pressed_function = partial(change_light_level, 32)
+    virtual_key_layers[fn_key_layer_id][physical_key_map["DOWN_ARROW"].physical_id].pressed_function = partial(change_light_level, -32)
+    virtual_key_layers[fn_key_layer_id][physical_key_map["TAB"].physical_id].pressed_function = change_light_mode
+    
     virtual_key_layer_id = 0
-    physical_key_id_map = {}
+    light_keys([], colors=[], refresh=True)
 
     while running:
         register_bits = read_shift_registers()
@@ -490,7 +536,7 @@ if __name__ == "__main__":
                     key.random_color(light_level)
                     pass
                 key.pressed = True
-                physical_key_id_map[key.physical_id] = key
+                # physical_key_id_map[key.physical_id] = key
             elif key.pressed == True:
                 key.pressed = False
                 # kbd.release(key.keycode)
@@ -501,16 +547,23 @@ if __name__ == "__main__":
         for key in virtual_key_layers[virtual_key_layer_id].values():
             if key.is_pressed():
                 if key.pressed == False:
-                    kbd.press(key.keycode)
-                key.pressed = True
+                    key.press()
+                    if key.pressed_function is None:  # TODO: refactor
+                        kbd.press(key.keycode)
+                # key.pressed = True
                 key.update_time = time.time()  # TODO: add an update function
             else:
                 if key.pressed == True:
+                    key.release()
                     kbd.release(key.keycode)
-                key.pressed = False
+                # key.pressed = False
                 key.update_time = time.time()
 
-        colors = [physical_key_id_map[pressed_key_id].color for pressed_key_id in pressed_key_ids]
-        light_keys(pressed_key_ids, colors=colors, refresh=True)
-        time.sleep(0.005)
+        light_key_ids = physical_key_ids if light_mode == "random_static" else pressed_key_ids
+        colors = [physical_key_id_map[pressed_key_id].color for pressed_key_id in light_key_ids]
+        light_keys(light_key_ids, colors=colors, refresh=True)
+        time.sleep(scan_interval)
 
+
+if __name__ == "__main__":
+    main()
