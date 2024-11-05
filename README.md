@@ -64,10 +64,6 @@ A Real-Time OS built for Keyboard using CircuitPython.
 - Set the CH9329 as the default connection.
 - When using the CH9329 connection, if more than six keys are pressed simultaneously, the additional (beyond six) keys will be released in the order they were pressed.
 
-### Acknowledgments
-
-- circuitpython-ch9329: https://github.com/74th/circuitpython-ch9329
-
 ### Tracking
 
 - wpa2 enterprise support: https://github.com/zephyrproject-rtos/zephyr/pull/78921
@@ -83,6 +79,15 @@ A Real-Time OS built for Keyboard using CircuitPython.
 - Dry Battery: Designing
 
 ### S68K7 2024.10.28 (Under construction)
+
+#### Schematic Diagram (Non-final version, proceed with caution.)
+![Key](Schematic/S68K7/Key_2024-11-05.png)
+![Light](Schematic/S68K7/Light_2024-11-05.png)
+![Power](Schematic/S68K7/Power_2024-11-05.png)
+![Control](Schematic/S68K7/Control_2024-11-05.png)
+
+#### PCB (Non-final version, proceed with caution.)
+[S68K7](PCB/S68K7/PCB_PCB108_1_2024-11-05.pdf)
 
 ### S68K6 2024.10.13 (success; Prototype 2)
 
@@ -127,5 +132,11 @@ A Real-Time OS built for Keyboard using CircuitPython.
 
 ## TODO:
 - Add Prototype Picture
-- Add PCB Picture
 - Migrate to MicroPython
+
+## Reference
+
+- circuitpython-ch9329: https://github.com/74th/circuitpython-ch9329
+- HelloWord-Keyboard: https://github.com/peng-zhihui/HelloWord-Keyboard
+- nRF52840-2.4GKeyboard: https://github.com/BrianLChen/nRF52840-2.4GKeyboard
+
