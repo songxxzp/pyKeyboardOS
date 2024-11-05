@@ -2,6 +2,10 @@
 
 A Real-Time OS built for Keyboard using CircuitPython.
 
+![S68K7](Pictures/S68K7.jpg)
+![S68K6](Pictures/S68K6.jpg)
+![S68K4_and_S68K5](Pictures/S68K4_and_S68K5.jpg)
+
 ## Software
 
 ### Files
