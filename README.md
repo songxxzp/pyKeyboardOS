@@ -24,6 +24,9 @@ A Real-Time OS built for Keyboard using CircuitPython.
 
 ### Changes
 
+#### 2024.11.05
+- [Unlocking the Key to CircuitPython: Crafting Custom Keystrokes for a DIY Keyboard](https://docs.qq.com/slide/DUkpNVmtPandxWmdu)
+
 #### 2024.11.01
 - Fix Bluetooth(hardward issue)
 - Add Basic RGB colors
