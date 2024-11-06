@@ -20,8 +20,8 @@ from lib.ch9329 import CH9329
 scan_interval = 0.001
 light_level = 255
 max_light_level = 255
-light_mode = "on_press"  # "on_press", "random_static"
-light_keys_on_start = ["Q", "W", "E", "Fn", "BACKSPACE"]
+light_mode = "random_static"  # "on_press", "random_static"
+light_keys_on_start = ["W", "A", "S", "D"]
 on_start_keyboard_mode = "usb_hid"
 
 CE_PIN = board.D10  # Chip Enable pin
@@ -138,19 +138,19 @@ physical_key_ids = None
 
 
 class PhysicalKey:
-    def __init__(self, key_id: int, key_name: str, light_level: int = light_level) -> None:
+    def __init__(self, key_id: int, key_name: str, max_light_level: int = max_light_level) -> None:
         self.physical_id = key_id
         self.key_name = key_name
         self.pressed = False
-        self.color = (light_level, light_level, light_level)
-        self.random_color(light_level)
+        self.color = (max_light_level, max_light_level, max_light_level)
+        self.random_color(max_light_level)
         # TODO: add used mark to avoid conflict
     
-    def random_color(self, light_level):
+    def random_color(self, max_light_level):
         self.color = (
-            random.randint(0, light_level),
-            random.randint(0, light_level),
-            random.randint(0, light_level)
+            random.randint(0, max_light_level),
+            random.randint(0, max_light_level),
+            random.randint(0, max_light_level)
         )
 
 
@@ -463,7 +463,8 @@ def light_keys(keys, refresh=True, colors=[], color=(16, 16, 16)):
     while len(colors) < len(keys):
         colors.append(color)
     for key_id, key_color in zip(keys, colors):
-        pixels[light_2_key.index(key_id)] = key_color
+        scaled_key_color = (int(key_color[0] * light_level / max_light_level), int(key_color[1] * light_level / max_light_level), int(key_color[2] * light_level / max_light_level))
+        pixels[light_2_key.index(key_id)] = scaled_key_color
     pixels.show()
 
 
@@ -477,12 +478,23 @@ def change_light_level(number, set_mode=False):
     return None
 
 
-def change_light_mode():
-    global light_mode
-    if light_mode == "on_press":
-        light_mode = "random_static"
-    elif light_mode == "random_static":
+def change_light_mode(target_mode=None):  # TODO: refactor
+    global light_mode, light_level
+    if target_mode is None:
+        if light_mode == "on_press":
+            light_mode = "random_static"
+            light_level = min(32, light_level)
+        elif light_mode == "random_static":
+            light_mode = "on_press"
+            light_level = max(max_light_level, light_level)
+        else:
+            light_mode = "on_press"
+    elif target_mode == "on_press":
         light_mode = "on_press"
+        light_level = max(max_light_level, light_level)
+    elif target_mode == "random_static":
+        light_mode = "random_static"
+        light_level = min(32, light_level)
     else:
         light_mode = "on_press"
     return None
@@ -524,6 +536,7 @@ def main():
     
     virtual_key_layer_id = 0
     light_keys([], colors=[], refresh=True)
+    change_light_mode(light_mode)
 
     while running:
         register_bits = read_shift_registers()
@@ -533,7 +546,7 @@ def main():
                 if key.pressed == False:
                     # kbd.press(key.keycode)
                     # print(f"Pressed PhysicalKey: {key.key_name}")
-                    key.random_color(light_level)
+                    key.random_color(max_light_level)
                     pass
                 key.pressed = True
                 # physical_key_id_map[key.physical_id] = key

@@ -20,6 +20,9 @@ A Real-Time OS built for Keyboard using CircuitPython.
 - Fn + W: connection via upper usb type-c
 - Fn + E: connection via bluetooth
 - Fn + BackSpace: erase saved bluetooth info(use when connection error)
+- Fn + TAB: switch rgb lighting mode
+- Fn + UP_ARROW: light++
+- Fn + DOWN_ARROW: light--
 
 - Fn + Home: PageUp
 - Fn + End: PageDown
