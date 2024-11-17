@@ -88,7 +88,7 @@ A Real-Time OS built for Keyboard using CircuitPython.
 - USB HUB: Testing
 - Dry Battery: Designing
 
-### S68K7 2024.10.28 (Under construction)
+### S68K7 2024.10.28 (Unstable, debugging)
 
 #### Schematic Diagram (Non-final version, proceed with caution.)
 ![Key](Schematic/S68K7/Key_2024-11-05.png)
@@ -98,6 +98,10 @@ A Real-Time OS built for Keyboard using CircuitPython.
 
 #### PCB (Non-final version, proceed with caution.)
 [S68K7](PCB/S68K7/PCB_PCB108_1_2024-11-05.pdf)
+
+- The voltage of the dry battery boost system is low.
+- When powered by USB, the battery pin voltage of the IP5407 should not be left floating.
+- There is a conflict between the two USB ports.
 
 ### S68K6 2024.10.13 (success; Prototype 2)
 

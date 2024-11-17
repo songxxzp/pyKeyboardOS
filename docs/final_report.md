@@ -9,6 +9,7 @@
 ### 外壳
 1. 5°人体工程倾角
 2. Gasket结构
+
 ![S68K7](../Pictures/S68K7.jpg)
 
 ### 原理图
@@ -17,6 +18,7 @@
 3. RGB灯珠
 4. IIC拓展接口
 5. 移位寄存器级联
+
 ![Key](../Schematic/S68K7/Key_2024-11-05.png)
 ![Light](../Schematic/S68K7/Light_2024-11-05.png)
 ![Power](../Schematic/S68K7/Power_2024-11-05.png)
@@ -25,6 +27,7 @@
 ### PCB
 1. 热插拔轴座
 2. 螺丝孔
+
 [S68K7](../PCB/S68K7/PCB_PCB108_1_2024-11-05.pdf)
 
 ## CircuitPython For Keyboard
