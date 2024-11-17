@@ -63,7 +63,7 @@ mos_io = digitalio.DigitalInOut(MOS_PIN)
 mos_io.direction = digitalio.Direction.OUTPUT
 mos_io.value = False
 
-uart = busio.UART(TX_PIN, RX_PIN, baudrate=38400)
+uart = busio.UART(TX_PIN, RX_PIN, baudrate=9600)
 
 light_2_key = [66, 65, 64, 63, 70, 69, 68, 50, 49, 48, 47, 54, 46, 39, 38, 31, 30, 23, 22, 18, 14, 7, 67, 55, 62, 8, 13, 17, 21, 24, 29, 32, 37, 40, 45, 53, 52, 44, 41, 36, 33, 28, 25, 20, 16, 12, 9, 61, 58, 56, 51, 43, 42, 35, 34, 27, 26, 19, 15, 11, 10, 60, 59, 57, 6, 5, 4, 3]
 
