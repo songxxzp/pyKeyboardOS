@@ -1,0 +1,6 @@
+{
+    "PAGE_UP": "HOME",
+    "PAGE_DOWN": "END",
+    "ESCAPE": "GRAVE_ACCENT",
+    "INSERT": "ESCAPE"
+}

@@ -1,0 +1,19 @@
+{
+    "ONE": "F1",
+    "TWO": "F2",
+    "THREE": "F3",
+    "FOUR": "F4",
+    "FIVE": "F5",
+    "SIX": "F6",
+    "SEVEN": "F7",
+    "EIGHT": "F8",
+    "NINE": "F9",
+    "ZERO": "F10",
+    "MINUS": "F11",
+    "EQUALS": "F12",
+    "INSERT": "PRINT_SCREEN",
+    "RIGHT_CONTROL": "APPLICATION",
+    "PAGE_UP": "PAGE_UP",
+    "PAGE_DOWN": "PAGE_DOWN",
+    "ESCAPE": "ESCAPE"
+}

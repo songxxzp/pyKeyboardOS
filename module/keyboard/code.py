@@ -3,8 +3,9 @@ import board
 import busio
 import digitalio
 import usb_hid
-import _bleio
 import random
+import json
+import _bleio
 
 import neopixel
 
@@ -23,6 +24,9 @@ max_light_level = 255
 light_mode = "random_static"  # "on_press", "random_static"
 light_keys_on_start = ["W", "A", "S", "D"]
 on_start_keyboard_mode = "usb_hid"
+physical_key_config_path = "config/physical_key_name_map.json"
+mapping_config_path = "config/mapping.json"
+fn_mapping_config_path = "config/fn_mapping.json"
 
 CE_PIN = board.D10  # Chip Enable pin
 PL_PIN = board.D9  # Parallel Load pin
@@ -59,82 +63,9 @@ mos_io = digitalio.DigitalInOut(MOS_PIN)
 mos_io.direction = digitalio.Direction.OUTPUT
 mos_io.value = False
 
-uart = busio.UART(TX_PIN, RX_PIN, baudrate=9600)
+uart = busio.UART(TX_PIN, RX_PIN, baudrate=38400)
 
 light_2_key = [66, 65, 64, 63, 70, 69, 68, 50, 49, 48, 47, 54, 46, 39, 38, 31, 30, 23, 22, 18, 14, 7, 67, 55, 62, 8, 13, 17, 21, 24, 29, 32, 37, 40, 45, 53, 52, 44, 41, 36, 33, 28, 25, 20, 16, 12, 9, 61, 58, 56, 51, 43, 42, 35, 34, 27, 26, 19, 15, 11, 10, 60, 59, 57, 6, 5, 4, 3]
-
-physical_key_name_map = {
-    "A": 45,
-    "B": 30,
-    "C": 38,
-    "D": 37,
-    "E": 36,
-    "F": 32,
-    "G": 29,
-    "H": 24,
-    "I": 16,
-    "J": 21,
-    "K": 17,
-    "L": 13,
-    "M": 22,
-    "N": 23,
-    "O": 12,
-    "P": 9,
-    "Q": 44,
-    "R": 33,
-    "S": 40,
-    "T": 28,
-    "U": 20,
-    "V": 31,
-    "W": 41,
-    "X": 39,
-    "Y": 25,
-    "Z": 46,
-    "UP_ARROW": 66,
-    "RIGHT_ARROW": 65,
-    "DOWN_ARROW": 64,
-    "LEFT_ARROW": 63,
-    "RIGHT_CONTROL": 70,
-    "Fn": 69,
-    "RIGHT_ALT": 68,
-    "SPACEBAR": 50,
-    "LEFT_ALT": 49,
-    "LEFT_GUI": 48,
-    "LEFT_CONTROL": 47,
-    "LEFT_SHIFT": 54,
-    "COMMA": 18,
-    "PERIOD": 14,
-    "FORWARD_SLASH": 7,
-    "RIGHT_SHIFT": 67,
-    "ENTER": 55,
-    "QUOTE": 62,
-    "SEMICOLON": 8,
-    "CAPS_LOCK": 53,
-    "TAB": 52,
-    "LEFT_BRACKET": 61,
-    "RIGHT_BRACKET": 58,
-    "BACKSLASH": 56,
-    "ESCAPE": 51,  # "~": 51,
-    "ONE": 43,
-    "TWO": 42,
-    "THREE": 35,
-    "FOUR": 34,
-    "FIVE": 27,
-    "SIX": 26,
-    "SEVEN": 19,
-    "EIGHT": 15,
-    "NINE": 11,
-    "ZERO": 10,
-    "MINUS": 60,
-    "EQUALS": 59,
-    "BACKSPACE": 57,
-    "INSERT": 6,  # "Esc": 6,
-    "PAGE_UP": 5,  # "Home": 5,
-    "PAGE_DOWN": 4,  # "End": 4,
-    "DELETE": 3,
-}
-
-physical_key_ids = None
 
 
 class PhysicalKey:
@@ -303,100 +234,16 @@ def partial(func, *args):
     return wrapper
 
 
-physical_key_map = {
-    key_name: PhysicalKey(key_id, key_name) for key_name, key_id in physical_key_name_map.items()
-}
-
-fn_key = physical_key_map["Fn"]
-physical_keys = list(physical_key_map.values())
-
-
 def generate_standard_layer():
     standard_layer = {
         physical_key.physical_id: VirtualKey(physical_key.key_name, getattr(Keycode, physical_key.key_name), bind_physical_key=physical_key) for physical_key in physical_keys if physical_key.key_name in dir(Keycode)
     }
-    standard_keys = [
-        VirtualKey("TWO", Keycode.TWO, physical_key_map["TWO"]),
-        VirtualKey("EIGHT", Keycode.EIGHT, physical_key_map["EIGHT"]),
-        VirtualKey("PAGE_DOWN", Keycode.PAGE_DOWN, physical_key_map["PAGE_DOWN"]),
-        VirtualKey("PAGE_UP", Keycode.PAGE_UP, physical_key_map["PAGE_UP"]),
-        VirtualKey("ENTER", Keycode.ENTER, physical_key_map["ENTER"]),
-        VirtualKey("E", Keycode.E, physical_key_map["E"]),
-        VirtualKey("D", Keycode.D, physical_key_map["D"]),
-        VirtualKey("SPACEBAR", Keycode.SPACEBAR, physical_key_map["SPACEBAR"]),
-        VirtualKey("RIGHT_ALT", Keycode.RIGHT_ALT, physical_key_map["RIGHT_ALT"]),
-        VirtualKey("EQUALS", Keycode.EQUALS, physical_key_map["EQUALS"]),
-        VirtualKey("LEFT_GUI", Keycode.LEFT_GUI, physical_key_map["LEFT_GUI"]),
-        VirtualKey("BACKSLASH", Keycode.BACKSLASH, physical_key_map["BACKSLASH"]),
-        VirtualKey("G", Keycode.G, physical_key_map["G"]),
-        VirtualKey("COMMA", Keycode.COMMA, physical_key_map["COMMA"]),
-        VirtualKey("F", Keycode.F, physical_key_map["F"]),
-        VirtualKey("O", Keycode.O, physical_key_map["O"]),
-        VirtualKey("CAPS_LOCK", Keycode.CAPS_LOCK, physical_key_map["CAPS_LOCK"]),
-        VirtualKey("I", Keycode.I, physical_key_map["I"]),
-        VirtualKey("H", Keycode.H, physical_key_map["H"]),
-        VirtualKey("K", Keycode.K, physical_key_map["K"]),
-        VirtualKey("J", Keycode.J, physical_key_map["J"]),
-        VirtualKey("U", Keycode.U, physical_key_map["U"]),
-        VirtualKey("T", Keycode.T, physical_key_map["T"]),
-        VirtualKey("W", Keycode.W, physical_key_map["W"]),
-        VirtualKey("V", Keycode.V, physical_key_map["V"]),
-        VirtualKey("Q", Keycode.Q, physical_key_map["Q"]),
-        VirtualKey("P", Keycode.P, physical_key_map["P"]),
-        VirtualKey("S", Keycode.S, physical_key_map["S"]),
-        VirtualKey("R", Keycode.R, physical_key_map["R"]),
-        VirtualKey("DOWN_ARROW", Keycode.DOWN_ARROW, physical_key_map["DOWN_ARROW"]),
-        VirtualKey("TAB", Keycode.TAB, physical_key_map["TAB"]),
-        VirtualKey("LEFT_ARROW", Keycode.LEFT_ARROW, physical_key_map["LEFT_ARROW"]),
-        VirtualKey("DELETE", Keycode.DELETE, physical_key_map["DELETE"]),
-        VirtualKey("Y", Keycode.Y, physical_key_map["Y"]),
-        VirtualKey("X", Keycode.X, physical_key_map["X"]),
-        VirtualKey("RIGHT_CONTROL", Keycode.RIGHT_CONTROL, physical_key_map["RIGHT_CONTROL"]),
-        VirtualKey("Z", Keycode.Z, physical_key_map["Z"]),
-        VirtualKey("LEFT_ALT", Keycode.LEFT_ALT, physical_key_map["LEFT_ALT"]),
-        VirtualKey("LEFT_SHIFT", Keycode.LEFT_SHIFT, physical_key_map["LEFT_SHIFT"]),
-        VirtualKey("PERIOD", Keycode.PERIOD, physical_key_map["PERIOD"]),
-        VirtualKey("LEFT_CONTROL", Keycode.LEFT_CONTROL, physical_key_map["LEFT_CONTROL"]),
-        VirtualKey("MINUS", Keycode.MINUS, physical_key_map["MINUS"]),
-        VirtualKey("RIGHT_SHIFT", Keycode.RIGHT_SHIFT, physical_key_map["RIGHT_SHIFT"]),
-        VirtualKey("FORWARD_SLASH", Keycode.FORWARD_SLASH, physical_key_map["FORWARD_SLASH"]),
-        VirtualKey("UP_ARROW", Keycode.UP_ARROW, physical_key_map["UP_ARROW"]),
-        VirtualKey("A", Keycode.A, physical_key_map["A"]),
-        VirtualKey("C", Keycode.C, physical_key_map["C"]),
-        VirtualKey("B", Keycode.B, physical_key_map["B"]),
-        VirtualKey("M", Keycode.M, physical_key_map["M"]),
-        VirtualKey("SEVEN", Keycode.SEVEN, physical_key_map["SEVEN"]),
-        VirtualKey("L", Keycode.L, physical_key_map["L"]),
-        VirtualKey("N", Keycode.N, physical_key_map["N"]),
-        VirtualKey("ZERO", Keycode.ZERO, physical_key_map["ZERO"]),
-        VirtualKey("QUOTE", Keycode.QUOTE, physical_key_map["QUOTE"]),
-        VirtualKey("NINE", Keycode.NINE, physical_key_map["NINE"]),
-        VirtualKey("SEMICOLON", Keycode.SEMICOLON, physical_key_map["SEMICOLON"]),
-        VirtualKey("LEFT_BRACKET", Keycode.LEFT_BRACKET, physical_key_map["LEFT_BRACKET"]),
-        VirtualKey("RIGHT_BRACKET", Keycode.RIGHT_BRACKET, physical_key_map["RIGHT_BRACKET"]),
-        VirtualKey("RIGHT_ARROW", Keycode.RIGHT_ARROW, physical_key_map["RIGHT_ARROW"]),
-        VirtualKey("ESCAPE", Keycode.ESCAPE, physical_key_map["ESCAPE"]),
-        VirtualKey("ONE", Keycode.ONE, physical_key_map["ONE"]),
-        VirtualKey("SIX", Keycode.SIX, physical_key_map["SIX"]),
-        VirtualKey("FOUR", Keycode.FOUR, physical_key_map["FOUR"]),
-        VirtualKey("INSERT", Keycode.INSERT, physical_key_map["INSERT"]),
-        VirtualKey("BACKSPACE", Keycode.BACKSPACE, physical_key_map["BACKSPACE"]),
-        VirtualKey("THREE", Keycode.THREE, physical_key_map["THREE"]),
-        VirtualKey("FIVE", Keycode.FIVE, physical_key_map["FIVE"]),
-    ]
     return standard_layer
 
 
 def generate_custom_layer():
     layer = generate_standard_layer()
-    mapping = {
-        "PAGE_UP": "HOME",
-        "PAGE_DOWN": "END",
-        "ESCAPE": "GRAVE_ACCENT",
-        "INSERT": "ESCAPE",
-    }
-    # layer[physical_key_map["ESCAPE"].physical_id] = VirtualKey("GRAVE_ACCENT", Keycode.GRAVE_ACCENT, physical_key_map["ESCAPE"])
-    # layer[physical_key_map["INSERT"].physical_id] = VirtualKey("ESCAPE", Keycode.ESCAPE, physical_key_map["INSERT"])
+    mapping = json.load(open(mapping_config_path))  # TODO: debug light
     for k, v in mapping.items():
         layer[physical_key_map[k].physical_id] = VirtualKey(v, getattr(Keycode, v), physical_key_map[k])
     return layer
@@ -404,29 +251,9 @@ def generate_custom_layer():
 
 def generate_fn_layer():
     layer = generate_standard_layer()
-    mapping = {
-        "ONE": "F1",
-        "TWO": "F2",
-        "THREE": "F3",
-        "FOUR": "F4",
-        "FIVE": "F5",
-        "SIX": "F6",
-        "SEVEN": "F7",
-        "EIGHT": "F8",
-        "NINE": "F9",
-        "ZERO": "F10",
-        "MINUS": "F11",
-        "EQUALS": "F12",
-        "INSERT": "PRINT_SCREEN",
-        "RIGHT_CONTROL": "APPLICATION",
-        "PAGE_UP": "PAGE_UP",
-        "PAGE_DOWN": "PAGE_DOWN",
-        "ESCAPE": "ESCAPE",
-    }
+    mapping = json.load(open(fn_mapping_config_path))  # TODO: debug light
     for k, v in mapping.items():
         layer[physical_key_map[k].physical_id] = VirtualKey(v, getattr(Keycode, v), physical_key_map[k])
-    # layer[physical_key_map["ONE"].physical_id] = VirtualKey("F1", Keycode.F1, physical_key_map["ONE"])
-    # layer[physical_key_map["TWO"].physical_id] = VirtualKey("F2", Keycode.F2, physical_key_map["TWO"])
     return layer
 
 
@@ -501,8 +328,11 @@ def change_light_mode(target_mode=None):  # TODO: refactor
 
 
 def main():
-    global physical_key_ids
+    global physical_key_ids, physical_key_map, fn_key, physical_keys
+
     running = True
+
+    physical_key_name_map = json.load(open(physical_key_config_path))
     id_key_map = {}
     for k, v in physical_key_name_map.items():
         id_key_map[v] = k
@@ -515,6 +345,10 @@ def main():
     light_keys(on_start_pressed_key_ids, colors=colors, refresh=True)
 
     kbd = VirtualKeyBoard()
+
+    physical_key_map = {key_name: PhysicalKey(key_id, key_name) for key_name, key_id in physical_key_name_map.items()}
+    fn_key = physical_key_map["Fn"]
+    physical_keys = list(physical_key_map.values())
 
     physical_key_ids= list(physical_key_name_map.values())
     physical_key_id_map = {key.physical_id: key for key in physical_keys}
