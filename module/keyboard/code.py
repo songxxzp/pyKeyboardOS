@@ -28,16 +28,16 @@ physical_key_config_path = "config/physical_key_name_map.json"
 mapping_config_path = "config/mapping.json"
 fn_mapping_config_path = "config/fn_mapping.json"
 
-CE_PIN = board.D10  # Chip Enable pin
-PL_PIN = board.D9  # Parallel Load pin
-SPI_CLOCK = board.D8  # SPI Clock pin
-SPI_MISO = board.D5  # SPI Master In Slave Out pin
+CE_PIN = board.GPIO13  # Chip Enable pin
+PL_PIN = board.GPIO12  # Parallel Load pin
+SPI_CLOCK = board.GPIO11  # SPI Clock pin
+SPI_MISO = board.GPIO14  # SPI Master In Slave Out pin
 
-RGB_CONTROLL = board.D3
-pixel_pin = board.D4  # RGB IN
-MOS_PIN = board.D2
-TX_PIN = board.D6
-RX_PIN = board.D7
+RGB_CONTROLL = board.GPIO9
+pixel_pin = board.GPIO10  # RGB IN
+MOS_PIN = board.GPIO21
+TX_PIN = board.GPIO47
+RX_PIN = board.GPIO48
 
 num_pixels = 68
 ORDER = neopixel.GRB
