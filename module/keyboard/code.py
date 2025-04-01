@@ -19,7 +19,8 @@ from lib.ch9329 import CH9329
 
 
 scan_interval = 0.001
-light_level = 255
+min_light_level_step = 4
+light_level = 4
 max_light_level = 255
 light_mode = "random_static"  # "on_press", "random_static"
 light_keys_on_start = ["W", "A", "S", "D"]
@@ -310,7 +311,7 @@ def change_light_mode(target_mode=None):  # TODO: refactor
     if target_mode is None:
         if light_mode == "on_press":
             light_mode = "random_static"
-            light_level = min(32, light_level)
+            light_level = min(min_light_level_step, light_level)
         elif light_mode == "random_static":
             light_mode = "on_press"
             light_level = max(max_light_level, light_level)
@@ -321,7 +322,7 @@ def change_light_mode(target_mode=None):  # TODO: refactor
         light_level = max(max_light_level, light_level)
     elif target_mode == "random_static":
         light_mode = "random_static"
-        light_level = min(32, light_level)
+        light_level = min(min_light_level_step, light_level)
     else:
         light_mode = "on_press"
     return None
@@ -364,8 +365,8 @@ def main():
     virtual_key_layers[fn_key_layer_id][physical_key_map["E"].physical_id].pressed_function = partial(kbd.set_mode, "bluetooth")
     virtual_key_layers[fn_key_layer_id][physical_key_map["R"].physical_id].pressed_function = partial(kbd.set_mode, "dummy")
     virtual_key_layers[fn_key_layer_id][physical_key_map["BACKSPACE"].physical_id].pressed_function = kbd.erase_bonding
-    virtual_key_layers[fn_key_layer_id][physical_key_map["UP_ARROW"].physical_id].pressed_function = partial(change_light_level, 32)
-    virtual_key_layers[fn_key_layer_id][physical_key_map["DOWN_ARROW"].physical_id].pressed_function = partial(change_light_level, -32)
+    virtual_key_layers[fn_key_layer_id][physical_key_map["UP_ARROW"].physical_id].pressed_function = partial(change_light_level, min_light_level_step)
+    virtual_key_layers[fn_key_layer_id][physical_key_map["DOWN_ARROW"].physical_id].pressed_function = partial(change_light_level, -min_light_level_step)
     virtual_key_layers[fn_key_layer_id][physical_key_map["TAB"].physical_id].pressed_function = change_light_mode
     
     virtual_key_layer_id = 0
